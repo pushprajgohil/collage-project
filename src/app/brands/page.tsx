@@ -1,10 +1,75 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { useRouter } from "next/navigation";
 import { useCollection, Car } from "@/context/CollectionContext";
+
+interface SchematicDetails {
+  model: string;
+  chassis: string;
+  aero: string;
+  suspension: string;
+  brakes: string;
+  tires: string;
+  weight: string;
+  driveType: string;
+}
+
+const BRAND_SCHEMATICS: Record<string, SchematicDetails> = {
+  "ferrari-sf90": {
+    model: "SF90 STRADALE",
+    chassis: "Carbon Fiber & Aluminum Spaceframe hybrid",
+    aero: "0.32 Cd (Active rear wing & vortex generators)",
+    suspension: "Magnetorheological active damping dampers",
+    brakes: "Brembo Carbon Ceramic (398mm / 360mm)",
+    tires: "Michelin Pilot Sport Cup 2R",
+    weight: "1,570 kg (3,461 lbs)",
+    driveType: "e4WD (Triple Electric Motors + Twin-Turbo V8)"
+  },
+  "lamborghini-revuelto": {
+    model: "REVUELTO V12 PHEV",
+    chassis: "Full Carbon Fiber Monofuselage structure",
+    aero: "0.34 Cd (Active rear spoiler with 3 dynamic tilt angles)",
+    suspension: "Double wishbone pushrod suspension front & rear",
+    brakes: "Carbon Ceramic Brakes (410mm / 390mm)",
+    tires: "Bridgestone Potenza Sport custom spec",
+    weight: "1,772 kg (3,907 lbs)",
+    driveType: "e-AWD (Twin front motors + rear transverse motor + V12)"
+  },
+  "bugatti-bolide": {
+    model: "BOLIDE TRACK APEX",
+    chassis: "LMP1-spec pre-preg Carbon Fiber monocoque",
+    aero: "0.39 Cd (Active roof scoop + carbon diffuser generating 1,800kg downforce)",
+    suspension: "Pushrod double wishbones with horizontal Öhlins dampers",
+    brakes: "AP Racing ventilated Carbon-Carbon brake discs (390mm)",
+    tires: "Michelin Racing slick compounds",
+    weight: "1,240 kg (2,734 lbs)",
+    driveType: "Permanent mechanical AWD (Quad-Turbo W16)"
+  },
+  "mclaren-senna": {
+    model: "SENNA PERFORMANCE MONSTER",
+    chassis: "MonoCage III Carbon Fiber cell with aluminum subframes",
+    aero: "0.35 Cd (Hydraulically actuated active wing and front splitters)",
+    suspension: "RaceActive Chassis Control II with interconnected hydraulics",
+    brakes: "Brembo CCMR Carbon Ceramic discs (390mm / 390mm)",
+    tires: "Pirelli P Zero Trofeo R",
+    weight: "1,198 kg (2,641 lbs)",
+    driveType: "Rear Wheel Drive (7-speed Dual-Clutch + V8 Twin-Turbo)"
+  },
+  "koenigsegg-jesko": {
+    model: "JESKO ABSOLUT",
+    chassis: "Carbon Fiber monocoque with integrated fuel tank & Kevlar",
+    aero: "0.278 Cd (Aerodynamically smoothed rear with dual active tail fins)",
+    suspension: "Double wishbones with active Triplex dampers front & rear",
+    brakes: "Koenigsegg carbon ceramic ventilated discs (410mm / 395mm)",
+    tires: "Michelin Pilot Sport Cup 2",
+    weight: "1,390 kg (3,064 lbs)",
+    driveType: "Rear Wheel Drive (9-speed LST + Twin-Turbo V8 E85)"
+  }
+};
 
 interface BrandCard {
   id: string;
@@ -26,6 +91,74 @@ interface BrandCard {
 
 export default function Brands() {
   const { addToCollection, removeFromCollection, isInCollection } = useCollection();
+  const router = useRouter();
+
+  // Decryption scan states
+  const [activeScanBrand, setActiveScanBrand] = useState<BrandCard | null>(null);
+  const [scanProgress, setScanProgress] = useState(0);
+  const [scanLogs, setScanLogs] = useState<string[]>([]);
+  const [showDecryptResult, setShowDecryptResult] = useState(false);
+
+  const startDecryption = (brand: BrandCard, e: React.MouseEvent) => {
+    e.preventDefault();
+    setActiveScanBrand(brand);
+    setScanProgress(0);
+    setScanLogs(["INITIALIZING SCHEMATICS UPLINK..."]);
+    setShowDecryptResult(false);
+  };
+
+  useEffect(() => {
+    if (!activeScanBrand) return;
+
+    const logSequence = [
+      { progress: 12, log: "CONNECTION SECURED. ACCESSING MANUFACTURER CORE..." },
+      { progress: 28, log: "DECRYPTING CHASSIS BLUEPRINTS & MONOCOQUE SPECS..." },
+      { progress: 52, log: "RETRIEVING DYNAMIC SUSPENSION STIFFNESS DATA..." },
+      { progress: 74, log: "MAPPING AERODYNAMIC DOWNFORCE STRESS CURVES..." },
+      { progress: 88, log: "EXTRACTING POWERPLANT BRAKING COEFFICIENTS..." },
+      { progress: 100, log: "DATA DECRYPTION SUCCESSFUL. INJECTING GRAPHICS..." }
+    ];
+
+    const updateInterval = setInterval(() => {
+      setScanProgress((prev) => {
+        const next = prev + Math.floor(Math.random() * 8) + 5;
+        if (next >= 100) {
+          clearInterval(updateInterval);
+          
+          setScanLogs(logs => {
+            if (!logs.includes("DATA DECRYPTION SUCCESSFUL. INJECTING GRAPHICS...")) {
+              return [...logs, "DATA DECRYPTION SUCCESSFUL. INJECTING GRAPHICS..."];
+            }
+            return logs;
+          });
+
+          // Wait a small bit before redirect or blueprint modal show
+          setTimeout(() => {
+            if (activeScanBrand.link) {
+              router.push(activeScanBrand.link);
+              setActiveScanBrand(null);
+            } else {
+              setShowDecryptResult(true);
+            }
+          }, 700);
+
+          return 100;
+        }
+
+        // Add logs dynamically as progress advances
+        const matchedLog = logSequence.find(item => prev < item.progress && next >= item.progress);
+        if (matchedLog) {
+          setScanLogs(logs => [...logs, matchedLog.log]);
+        }
+
+        return next;
+      });
+    }, 100);
+
+    return () => {
+      clearInterval(updateInterval);
+    };
+  }, [activeScanBrand, router]);
 
   const brandsList: BrandCard[] = [
     {
@@ -239,13 +372,15 @@ export default function Brands() {
                     </div>
 
                     <div className="flex gap-2">
-                      <Link
-                        href={brand.link || "#"}
-                        className="flex-grow py-3 bg-transparent border-2 border-primary-container text-on-surface font-jetbrains-mono text-xs uppercase tracking-widest flex justify-between items-center px-4 hover:shadow-[0_0_15px_rgba(255,85,64,0.45)] hover:text-primary-container transition-all"
+                    <div className="flex gap-2">
+                      <button
+                        onClick={(e) => startDecryption(brand, e)}
+                        className="flex-grow py-3 bg-transparent border-2 border-primary-container text-on-surface font-jetbrains-mono text-xs uppercase tracking-widest flex justify-between items-center px-4 hover:shadow-[0_0_15px_rgba(255,85,64,0.45)] hover:text-primary-container transition-all cursor-pointer select-none"
                       >
                         <span>{brand.link ? "ACCESS DATABANK" : "SCHEMATICS LOADED"}</span>
                         <span className="material-symbols-outlined text-xs font-bold text-[#e2e2e2] group-hover:text-primary-container transition-colors">arrow_forward_ios</span>
-                      </Link>
+                      </button>
+                    </div>
                     </div>
                   </div>
                 </div>
@@ -255,6 +390,209 @@ export default function Brands() {
         </div>
       </main>
 
+      {/* Futuristic Cyberpunk Schematics Decryption Overlay */}
+      {activeScanBrand && (
+        <div className="fixed inset-0 bg-[#07050a]/96 z-50 flex items-center justify-center backdrop-blur-lg px-4 select-none animate-fade-in">
+          {/* Diagnostic Grid Background */}
+          <div className="absolute inset-0 pointer-events-none ghost-grid opacity-20" />
+          
+          {/* Laser scanning sweep line (only during scanning phase) */}
+          {!showDecryptResult && (
+            <div 
+              className="absolute inset-x-0 h-1 bg-primary-container/80 shadow-[0_0_15px_#ff5540] pointer-events-none animate-pulse"
+              style={{
+                animation: 'scanLine 2.2s infinite ease-in-out',
+                top: '0%'
+              }}
+            />
+          )}
+
+          {/* Add CSS keyframes for scan line dynamically */}
+          <style>{`
+            @keyframes scanLine {
+              0% { top: 0%; opacity: 0.3; }
+              50% { top: 100%; opacity: 0.9; }
+              100% { top: 0%; opacity: 0.3; }
+            }
+          `}</style>
+
+          {/* HUD Content Container */}
+          <div 
+            className="w-full max-w-2xl bg-surface border-2 border-primary-container/40 p-6 md:p-8 flex flex-col items-center justify-between relative shadow-[0_0_30px_rgba(255,85,64,0.15)] overflow-hidden"
+            style={{ clipPath: "polygon(0 0, calc(100% - 30px) 0, 100% 30px, 100% 100%, 0 100%)" }}
+          >
+            {/* Corner Bracket decorations */}
+            <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-primary-container/60" />
+            <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-primary-container/60" />
+
+            {!showDecryptResult ? (
+              // PHASE 1: SCANNING PROGRESS HUD
+              <div className="w-full flex flex-col items-center py-8">
+                <span className="material-symbols-outlined text-[#ff5540] text-5xl animate-spin mb-4" style={{ animationDuration: '3s' }}>
+                  progress_activity
+                </span>
+                
+                <h2 className="font-anybody text-lg md:text-xl font-bold tracking-widest text-on-surface uppercase text-center mb-1">
+                  DECRYPTING STRUCTURAL SCHEMATICS
+                </h2>
+                <p className="font-jetbrains-mono text-[9px] text-[#ffb4a8] tracking-widest uppercase opacity-75 mb-6">
+                  CONTRACTOR: {activeScanBrand.name.toUpperCase()} // SOURCE: SECURE_UPLINK
+                </p>
+
+                {/* Progress Bar */}
+                <div className="w-full max-w-md h-3.5 bg-surface-container border border-outline-variant/30 rounded-none overflow-hidden p-0.5 mb-6">
+                  <div 
+                    className="h-full bg-gradient-to-r from-[#ff5500] to-[#ffaa00] transition-all duration-75 shadow-[0_0_8px_#ff5500]"
+                    style={{ width: `${scanProgress}%` }}
+                  />
+                </div>
+
+                {/* Simulated Telemetry Terminal Logs */}
+                <div className="w-full max-w-md h-32 bg-[#09070c] border border-outline-variant/30 p-3 font-mono text-[9px] text-[#ffb4a8]/90 overflow-y-auto space-y-1.5 scrollbar-thin">
+                  {scanLogs.map((log, index) => (
+                    <div key={index} className="flex gap-2 animate-fade-in">
+                      <span className="text-zinc-600">[{index + 1}]</span>
+                      <span className="text-primary-container">»</span>
+                      <span className="text-on-surface truncate">{log}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              // PHASE 2: SPECS BLUEPRINT SCHEMATIC CONSOLE
+              <div className="w-full">
+                {/* Header */}
+                <div className="flex justify-between items-start border-b border-outline-variant/30 pb-4 mb-6">
+                  <div>
+                    <span className="text-[10px] text-primary font-bold tracking-widest font-jetbrains-mono uppercase">
+                      SCHEMATICS DECRYPTED // DATA_LOCK_OFF
+                    </span>
+                    <h2 className="font-anybody text-2xl md:text-3xl text-on-surface uppercase tracking-tight mt-1">
+                      {activeScanBrand.name} {activeScanBrand.subName}
+                    </h2>
+                  </div>
+                  <span className="font-jetbrains-mono text-xs font-bold text-green-500 bg-green-500/10 px-2 py-0.5 border border-green-500/20">
+                    DECRYPTED
+                  </span>
+                </div>
+
+                {/* Content columns */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                  
+                  {/* Left Column: Car visual schema & Wishlist */}
+                  <div className="flex flex-col gap-4">
+                    <div className="relative border border-outline-variant/30 aspect-video rounded overflow-hidden bg-black/60 flex items-center justify-center">
+                      <div className="absolute inset-0 ghost-grid opacity-30 pointer-events-none" />
+                      
+                      {/* Scanning wireframe mock silhouette */}
+                      <svg className="w-44 h-auto text-primary-container/40 opacity-70 animate-pulse" viewBox="0 0 100 60" fill="none" stroke="currentColor" strokeWidth="0.8">
+                        {/* Wheel 1 */}
+                        <circle cx="25" cy="40" r="10" />
+                        <circle cx="25" cy="40" r="4" />
+                        {/* Wheel 2 */}
+                        <circle cx="75" cy="40" r="10" />
+                        <circle cx="75" cy="40" r="4" />
+                        {/* Body contours */}
+                        <path d="M 5,40 L 15,40 Q 20,25 35,23 L 55,20 Q 70,20 75,30 L 95,40 L 95,43 L 5,43 Z" />
+                        <path d="M 35,23 Q 48,15 62,20 L 70,30" />
+                        {/* Radar line */}
+                        <line x1="50" y1="5" x2="50" y2="55" stroke="#ff5540" strokeWidth="1" strokeDasharray="2 2" />
+                      </svg>
+                      
+                      <div className="absolute top-2 left-2 text-[8px] font-mono text-zinc-500">SCHEMATIC_RENDER v1.0</div>
+                      <div className="absolute bottom-2 right-2 text-[8px] font-mono text-zinc-400">FACILITY: {activeScanBrand.facility}</div>
+                    </div>
+
+                    <p className="font-sans text-[11px] text-on-surface-variant leading-relaxed italic border-l border-outline-variant pl-2">
+                      {activeScanBrand.description || "Decrypted CAD blueprints, aerodynamic wind tunnel flow profiles, and direct mechanical layouts are now unlocked."}
+                    </p>
+
+                    <button
+                      onClick={() => handleWishlistToggle(activeScanBrand)}
+                      className={`py-2 w-full font-jetbrains-mono text-[10px] uppercase font-bold tracking-widest rounded flex items-center justify-center gap-1.5 transition-all duration-200 cursor-pointer ${
+                        isInCollection(activeScanBrand.id)
+                          ? "bg-surface border border-red-500/40 text-red-400 hover:bg-red-500/10"
+                          : "bg-primary-container text-white hover:bg-primary-container/85 shadow-[0_0_10px_rgba(255,85,64,0.25)]"
+                      }`}
+                    >
+                      <span className="material-symbols-outlined text-[13px] font-bold">
+                        {isInCollection(activeScanBrand.id) ? "delete" : "bookmark"}
+                      </span>
+                      {isInCollection(activeScanBrand.id) ? "Remove Wishlist" : "Save to Wishlist"}
+                    </button>
+                  </div>
+
+                  {/* Right Column: Spec Blueprint details */}
+                  <div className="font-jetbrains-mono text-[10px] space-y-2 border-t md:border-t-0 md:border-l border-outline-variant/30 pt-4 md:pt-0 md:pl-6 text-secondary">
+                    {(() => {
+                      const specs = BRAND_SCHEMATICS[activeScanBrand.id] || {
+                        model: activeScanBrand.subName,
+                        chassis: "Advanced carbon composites monocoque",
+                        aero: "High downforce track geometry",
+                        suspension: "Active ride control dampers",
+                        brakes: "High friction carbon ceramic discs",
+                        tires: "High performance racing tires",
+                        weight: "Ultralight aerodynamic chassis",
+                        driveType: activeScanBrand.powerplant
+                      };
+                      return (
+                        <>
+                          <div className="border-b border-outline-variant/10 pb-1.5">
+                            <span className="block text-outline text-[9px] tracking-wider uppercase mb-0.5">TECHNICAL MODEL</span>
+                            <span className="text-on-surface font-bold">{specs.model}</span>
+                          </div>
+                          <div className="border-b border-outline-variant/10 pb-1.5">
+                            <span className="block text-outline text-[9px] tracking-wider uppercase mb-0.5">COMPOSITE CHASSIS</span>
+                            <span className="text-on-surface">{specs.chassis}</span>
+                          </div>
+                          <div className="border-b border-outline-variant/10 pb-1.5">
+                            <span className="block text-outline text-[9px] tracking-wider uppercase mb-0.5">AERODYNAMIC INDEX</span>
+                            <span className="text-on-surface">{specs.aero}</span>
+                          </div>
+                          <div className="border-b border-outline-variant/10 pb-1.5">
+                            <span className="block text-outline text-[9px] tracking-wider uppercase mb-0.5">SUSPENSION SYSTEM</span>
+                            <span className="text-on-surface">{specs.suspension}</span>
+                          </div>
+                          <div className="border-b border-outline-variant/10 pb-1.5">
+                            <span className="block text-outline text-[9px] tracking-wider uppercase mb-0.5">BRAKING ASSEMBLY</span>
+                            <span className="text-on-surface">{specs.brakes}</span>
+                          </div>
+                          <div className="border-b border-outline-variant/10 pb-1.5">
+                            <span className="block text-outline text-[9px] tracking-wider uppercase mb-0.5">TIRE COMPOUND</span>
+                            <span className="text-on-surface">{specs.tires}</span>
+                          </div>
+                          <div className="border-b border-outline-variant/10 pb-1.5">
+                            <span className="block text-outline text-[9px] tracking-wider uppercase mb-0.5">CURB WEIGHT</span>
+                            <span className="text-on-surface">{specs.weight}</span>
+                          </div>
+                          <div>
+                            <span className="block text-outline text-[9px] tracking-wider uppercase mb-0.5">POWERTRAIN DRIVE</span>
+                            <span className="text-primary font-bold">{specs.driveType}</span>
+                          </div>
+                        </>
+                      );
+                    })()}
+                  </div>
+
+                </div>
+
+                {/* Footer Controls */}
+                <div className="flex justify-end gap-3 border-t border-[#353535] pt-6 mt-6">
+                  <button
+                    onClick={() => {
+                      setActiveScanBrand(null);
+                      setShowDecryptResult(false);
+                    }}
+                    className="px-6 py-2.5 bg-[#1f1f1f] border border-outline-variant/40 hover:border-primary-container text-secondary hover:text-white font-jetbrains-mono text-[10px] uppercase font-bold tracking-widest transition-colors cursor-pointer"
+                  >
+                    DISMISS TERMINAL
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
       <Footer />
     </div>
   );
