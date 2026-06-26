@@ -241,10 +241,10 @@ export default function Brands() {
                     <div className="flex gap-2">
                       <Link
                         href={brand.link || "#"}
-                        className="flex-grow py-3 bg-transparent border-2 border-outline-variant group-hover:border-primary-container text-on-surface font-jetbrains-mono text-sm uppercase tracking-widest flex justify-between items-center px-4 hover:shadow-[0_0_15px_rgba(255,85,64,0.4)] hover:text-primary-container transition-all"
+                        className="flex-grow py-3 bg-transparent border-2 border-primary-container text-on-surface font-jetbrains-mono text-xs uppercase tracking-widest flex justify-between items-center px-4 hover:shadow-[0_0_15px_rgba(255,85,64,0.45)] hover:text-primary-container transition-all"
                       >
                         <span>{brand.link ? "ACCESS DATABANK" : "SCHEMATICS LOADED"}</span>
-                        <span className="material-symbols-outlined text-sm font-bold">arrow_forward_ios</span>
+                        <span className="material-symbols-outlined text-xs font-bold text-[#e2e2e2] group-hover:text-primary-container transition-colors">arrow_forward_ios</span>
                       </Link>
                     </div>
                   </div>
