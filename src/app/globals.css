@@ -1,0 +1,127 @@
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #ffb4a8;
+  --color-primary-container: #ff5540;
+  --color-inverse-primary: #c00100;
+  --color-secondary: #c6c6c7;
+  --color-secondary-container: #454747;
+  --color-tertiary: #c8c6c5;
+  --color-tertiary-container: #929090;
+  --color-surface: #131313;
+  --color-surface-variant: #353535;
+  --color-surface-bright: #393939;
+  --color-surface-dim: #131313;
+  --color-background: #131313;
+  --color-on-background: #e2e2e2;
+  --color-on-surface: #e2e2e2;
+  --color-on-surface-variant: #ebbbb4;
+  --color-on-primary: #690100;
+  --color-on-primary-container: #5c0000;
+  --color-on-secondary: #2f3131;
+  --color-on-secondary-container: #b4b5b5;
+  --color-on-tertiary: #313030;
+  --color-on-tertiary-container: #2a2a2a;
+  --color-outline: #b18780;
+  --color-outline-variant: #603e39;
+  --color-surface-container-high: #2a2a2a;
+  --color-surface-container-highest: #353535;
+  --color-surface-container-lowest: #0e0e0e;
+  --color-surface-container-low: #1b1b1b;
+  --color-surface-container: #1f1f1f;
+
+  --font-anybody: var(--font-anybody);
+  --font-geist: var(--font-geist-sans);
+  --font-jetbrains-mono: var(--font-jetbrains-mono);
+}
+
+:root {
+  --background: #131313;
+  --foreground: #e2e2e2;
+  --margin-mobile: 20px;
+  --margin-desktop: 64px;
+  --container-max: 1440px;
+  --gutter: 24px;
+}
+
+body {
+  background-color: #131313;
+  color: #e2e2e2;
+}
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* Carbon Fiber backgrounds */
+.bg-pattern-carbon, .carbon-pattern {
+  background-image: linear-gradient(45deg, #131313 25%, transparent 25%, transparent 75%, #131313 75%, #131313), 
+                    linear-gradient(45deg, #131313 25%, transparent 25%, transparent 75%, #131313 75%, #131313);
+  background-size: 4px 4px;
+  background-position: 0 0, 2px 2px;
+  background-color: #1a1a1a;
+}
+
+/* Glass card ghost grid */
+.ghost-grid {
+  background-image: 
+    linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* HUD glows */
+.hud-glow-red {
+  box-shadow: 0 0 15px #ff5540;
+}
+
+.glow-active {
+  box-shadow: 0 0 15px rgba(255, 85, 64, 0.3);
+}
+
+.glow-hover:hover {
+  box-shadow: 0 0 15px rgba(255, 85, 64, 0.5);
+  border-color: #ffb4a8;
+}
+
+/* Corner clip designs */
+.clip-corner {
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%);
+}
+
+.clipped-corner {
+  clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 0 100%);
+}
+
+.clipped-corner-tr {
+  clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 0 100%);
+}
+
+.clipped-corner-br {
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%);
+}
+
+.gauge-marks {
+  background: repeating-conic-gradient(from 0deg, transparent 0deg 2deg, #ff5540 2deg 3deg);
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0e0e0e;
+  border-left: 1px solid #603e39;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #ff5540;
+  border-radius: 0;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #ffb4a8;
+}
